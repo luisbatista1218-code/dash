@@ -1,122 +1,1036 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Sistema Produtos</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Sistema Gestão - Micro Empresa</title>
     <style>
-        body { font-family: Arial; padding: 20px; }
-        input, button { padding: 10px; margin: 5px; }
-        .produto { border: 1px solid #ccc; padding: 10px; margin: 5px; }
+        /* RESET E BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 5px solid #3498db;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .header h1 span {
+            color: #3498db;
+        }
+        
+        /* NAVEGAÇÃO */
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+        
+        .nav-tab.active {
+            background: white;
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        /* CONTEÚDO */
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* FORMULÁRIOS */
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        /* BOTÕES */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+        
+        /* TABELAS */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* CARDS DO DASHBOARD */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-top: 5px solid;
+            transition: transform 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-blue { border-color: #3498db; }
+        .card-green { border-color: #2ecc71; }
+        .card-orange { border-color: #e67e22; }
+        .card-red { border-color: #e74c3c; }
+        .card-purple { border-color: #9b59b6; }
+        
+        .card-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        
+        .card-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        /* GRÁFICOS */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* ALERTAS */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            color: #721c24;
+        }
+        
+        /* STATUS */
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 15px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🛒 Sistema de Produtos</h1>
-    
-    <div id="status">Carregando...</div>
-    
-    <div>
-        <h3>➕ Novo Produto</h3>
-        <input type="text" id="nome" placeholder="Nome">
-        <input type="number" id="preco" placeholder="Preço" step="0.01">
-        <button onclick="cadastrar()">Cadastrar</button>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>
+                📊 <span>SISTEMA DE GESTÃO</span>
+                <small style="font-size: 0.4em; color: #bdc3c7;">| MICRO EMPRESA</small>
+            </h1>
+            <p>Sistema completo para gestão de produtos e vendas</p>
+        </div>
+        
+        <!-- NAVEGAÇÃO -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="openTab('dashboard')">📊 Dashboard</div>
+            <div class="nav-tab" onclick="openTab('produtos')">📦 Produtos</div>
+            <div class="nav-tab" onclick="openTab('vendas')">💰 Vendas</div>
+            <div class="nav-tab" onclick="openTab('relatorios')">📈 Relatórios</div>
+        </div>
+        
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="tab-content active">
+            <div style="margin-bottom: 30px;">
+                <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Dashboard - Visão Geral</h2>
+                <div id="statusDashboard" class="status status-loading">🔄 Carregando dados do dashboard...</div>
+            </div>
+            
+            <!-- CARDS DE RESUMO -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card card-blue">
+                    <div class="card-icon">💰</div>
+                    <div class="card-label">Vendas Hoje</div>
+                    <div class="card-value" id="vendasHoje">R$ 0,00</div>
+                    <div style="color: #7f8c8d; font-size: 14px;">🔄 Atualizado agora</div>
+                </div>
+                
+                <div class="dashboard-card card-green">
+                    <div class="card-icon">📦</div>
+                    <div class="card-label">Total Produtos</div>
+                    <div class="card-value" id="totalProdutos">0</div>
+                    <div style="color: #7f8c8d; font-size: 14px;">📊 Em estoque</div>
+                </div>
+                
+                <div class="dashboard-card card-orange">
+                    <div class="card-icon">📈</div>
+                    <div class="card-label">Vendas Mês</div>
+                    <div class="card-value" id="vendasMes">R$ 0,00</div>
+                    <div style="color: #7f8c8d; font-size: 14px">🎯 Meta: R$ 10.000</div>
+                </div>
+                
+                <div class="dashboard-card card-red">
+                    <div class="card-icon">⚠️</div>
+                    <div class="card-label">Baixo Estoque</div>
+                    <div class="card-value" id="baixoEstoque">0</div>
+                    <div style="color: #7f8c8d; font-size: 14px;">🔔 Necessitam reposição</div>
+                </div>
+            </div>
+            
+            <!-- ALERTAS DE ESTOQUE -->
+            <div id="alertasEstoque" style="margin: 30px 0;"></div>
+            
+            <!-- PRODUTOS MAIS VENDIDOS -->
+            <div class="chart-container">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">🏆 Produtos Mais Vendidos (Semana)</h3>
+                <div id="maisVendidos" style="padding: 20px; background: #f8f9fa; border-radius: 10px; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center; color: #7f8c8d;">
+                        <div style="font-size: 3em; margin-bottom: 10px;">📊</div>
+                        <div>Carregando dados de vendas...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PRODUTOS -->
+        <div id="produtos" class="tab-content">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">📦 Gestão de Produtos</h2>
+            <div id="statusProdutos" class="status status-loading">🔄 Carregando produtos...</div>
+            
+            <!-- FORMULÁRIO CADASTRO -->
+            <div class="form-section">
+                <h3>➕ Cadastrar Novo Produto</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="produtoNome">Produto *</label>
+                        <input type="text" id="produtoNome" placeholder="Ex: Notebook Dell i7">
+                    </div>
+                    <div class="form-group">
+                        <label for="produtoEstoque">Estoque Inicial *</label>
+                        <input type="number" id="produtoEstoque" placeholder="Ex: 50" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="produtoCusto">Custo de Aquisição *</label>
+                        <input type="number" id="produtoCusto" step="0.01" placeholder="Ex: 2500.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="produtoPreco">Preço de Venda *</label>
+                        <input type="number" id="produtoPreco" step="0.01" placeholder="Ex: 3500.00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="produtoDescricao">Descrição (opcional)</label>
+                    <textarea id="produtoDescricao" rows="3" placeholder="Descrição detalhada do produto..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="cadastrarProduto()">
+                    💾 Salvar Produto
+                </button>
+            </div>
+            
+            <!-- LISTA DE PRODUTOS -->
+            <div>
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📋 Produtos Cadastrados</h3>
+                <div class="table-container">
+                    <table id="tabelaProdutos">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Produto</th>
+                                <th>Estoque</th>
+                                <th>Custo</th>
+                                <th>Preço Venda</th>
+                                <th>Margem</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaProdutosBody">
+                            <!-- Produtos carregados aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VENDAS -->
+        <div id="vendas" class="tab-content">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">💰 Registro de Vendas</h2>
+            <div id="statusVendas" class="status status-loading">🔄 Carregando dados...</div>
+            
+            <!-- FORMULÁRIO VENDA -->
+            <div class="form-section">
+                <h3>🛒 Nova Venda</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="vendaProduto">Produto *</label>
+                        <select id="vendaProduto">
+                            <option value="">Selecione um produto...</option>
+                            <!-- Produtos carregados via JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vendaQuantidade">Quantidade *</label>
+                        <input type="number" id="vendaQuantidade" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendaPreco">Preço Unitário *</label>
+                        <input type="number" id="vendaPreco" step="0.01" placeholder="Preço de venda">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="registrarVenda()">
+                    ✅ Registrar Venda
+                </button>
+            </div>
+            
+            <!-- ÚLTIMAS VENDAS -->
+            <div style="margin-top: 40px;">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📝 Últimas Vendas</h3>
+                <div class="table-container">
+                    <table id="tabelaVendas">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Produto</th>
+                                <th>Qtd</th>
+                                <th>Valor Unit.</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaVendasBody">
+                            <!-- Vendas carregadas aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RELATÓRIOS -->
+        <div id="relatorios" class="tab-content">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">📈 Relatórios Analíticos</h2>
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-card card-purple">
+                    <div class="card-icon">📅</div>
+                    <div class="card-label">Vendas Diárias</div>
+                    <div class="card-value" id="relDiario">R$ 0,00</div>
+                    <button class="btn" onclick="gerarRelatorio('diario')" style="margin-top: 15px; padding: 8px 15px; font-size: 14px;">Ver Detalhes</button>
+                </div>
+                
+                <div class="dashboard-card card-blue">
+                    <div class="card-icon">📅</div>
+                    <div class="card-label">Vendas Semanais</div>
+                    <div class="card-value" id="relSemanal">R$ 0,00</div>
+                    <button class="btn" onclick="gerarRelatorio('semanal')" style="margin-top: 15px; padding: 8px 15px; font-size: 14px;">Ver Detalhes</button>
+                </div>
+                
+                <div class="dashboard-card card-green">
+                    <div class="card-icon">📅</div>
+                    <div class="card-label">Vendas Mensais</div>
+                    <div class="card-value" id="relMensal">R$ 0,00</div>
+                    <button class="btn" onclick="gerarRelatorio('mensal')" style="margin-top: 15px; padding: 8px 15px; font-size: 14px;">Ver Detalhes</button>
+                </div>
+            </div>
+            
+            <!-- MAIS E MENOS VENDIDOS -->
+            <div class="chart-container">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📊 Análise de Produtos</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <h4 style="color: #27ae60; margin-bottom: 15px;">✅ Mais Vendidos</h4>
+                        <div id="topMaisVendidos" style="min-height: 200px; background: #f8f9fa; border-radius: 10px; padding: 20px;">
+                            Carregando...
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: #e74c3c; margin-bottom: 15px;">⚠️ Menos Vendidos</h4>
+                        <div id="topMenosVendidos" style="min-height: 200px; background: #f8f9fa; border-radius: 10px; padding: 20px;">
+                            Carregando...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <div id="produtos" style="margin-top: 20px;"></div>
 
     <script>
+        // CONFIGURAÇÃO SUPABASE
         const SUPABASE_URL = 'https://epcbuzoyhoksyqgtruyr.supabase.co'
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwY2J1em95aG9rc3lxZ3RydXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDM2MjgsImV4cCI6MjA4NTg3OTYyOH0.0EJEG5n06RJSrXfNzbkR7LVgtUSppScogSLmGYRclD0'
         
-        // FUNÇÃO PARA BUSCAR DADOS
-        async function carregarProdutos() {
-            document.getElementById('status').innerHTML = 'Carregando...'
+        // ESTADO GLOBAL
+        let produtos = []
+        let vendas = []
+        
+        // ========== FUNÇÕES DE NAVEGAÇÃO ==========
+        function openTab(tabName) {
+            // Remove active de todas as tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active')
+            })
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active')
+            })
+            
+            // Adiciona active na tab selecionada
+            document.querySelector(`[onclick="openTab('${tabName}')"]`).classList.add('active')
+            document.getElementById(tabName).classList.add('active')
+            
+            // Carrega dados específicos da tab
+            if (tabName === 'dashboard') carregarDashboard()
+            if (tabName === 'produtos') carregarProdutos()
+            if (tabName === 'vendas') carregarVendas()
+            if (tabName === 'relatorios') carregarRelatorios()
+        }
+        
+        // ========== FUNÇÕES SUPABASE ==========
+        async function supabaseFetch(endpoint, options = {}) {
+            const url = `${SUPABASE_URL}/rest/v1/${endpoint}?apikey=${SUPABASE_KEY}`
+            
+            const defaultHeaders = {
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'apikey': SUPABASE_KEY,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            }
             
             try {
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/produtos?apikey=${SUPABASE_KEY}&select=*&order=id.desc`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'apikey': SUPABASE_KEY
-                        }
-                    }
-                )
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { ...defaultHeaders, ...options.headers }
+                })
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+                    const errorText = await response.text()
+                    throw new Error(`HTTP ${response.status}: ${errorText}`)
                 }
                 
-                const dados = await response.json()
+                return await response.json()
+            } catch (error) {
+                console.error('Erro Supabase:', error)
+                throw error
+            }
+        }
+        
+        // ========== DASHBOARD ==========
+        async function carregarDashboard() {
+            const status = document.getElementById('statusDashboard')
+            status.className = 'status status-loading'
+            status.innerHTML = '🔄 Carregando dados do dashboard...'
+            
+            try {
+                // Carrega produtos e vendas
+                await Promise.all([carregarProdutos(), carregarVendas()])
                 
-                if (dados.length === 0) {
-                    document.getElementById('produtos').innerHTML = '<p>Nenhum produto cadastrado.</p>'
-                } else {
-                    let html = '<h3>📦 Produtos:</h3>'
-                    dados.forEach(p => {
+                // Calcula métricas
+                const hoje = new Date().toISOString().split('T')[0]
+                const vendasHoje = vendas.filter(v => v.data.split('T')[0] === hoje)
+                    .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
+                
+                const mesAtual = new Date().getMonth() + 1
+                const vendasMes = vendas.filter(v => new Date(v.data).getMonth() + 1 === mesAtual)
+                    .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
+                
+                const baixoEstoque = produtos.filter(p => p.estoque < 10).length
+                
+                // Atualiza cards
+                document.getElementById('vendasHoje').textContent = `R$ ${vendasHoje.toFixed(2)}`
+                document.getElementById('totalProdutos').textContent = produtos.length
+                document.getElementById('vendasMes').textContent = `R$ ${vendasMes.toFixed(2)}`
+                document.getElementById('baixoEstoque').textContent = baixoEstoque
+                
+                // Alertas de estoque
+                const alertasDiv = document.getElementById('alertasEstoque')
+                alertasDiv.innerHTML = ''
+                
+                produtos.filter(p => p.estoque < 5).forEach(p => {
+                    alertasDiv.innerHTML += `
+                        <div class="alert alert-danger">
+                            ⚠️ <strong>${p.nome}</strong> - Estoque baixo: ${p.estoque} unidades
+                        </div>
+                    `
+                })
+                
+                if (alertasDiv.innerHTML === '') {
+                    alertasDiv.innerHTML = `
+                        <div class="alert" style="background: #d4edda; border-left: 5px solid #28a745; color: #155724;">
+                            ✅ Todos os produtos com estoque adequado
+                        </div>
+                    `
+                }
+                
+                // Produtos mais vendidos (simulado)
+                const maisVendidosDiv = document.getElementById('maisVendidos')
+                if (vendas.length > 0) {
+                    // Agrupa vendas por produto
+                    const vendasPorProduto = {}
+                    vendas.forEach(v => {
+                        const prodId = v.produto_id
+                        if (!vendasPorProduto[prodId]) vendasPorProduto[prodId] = 0
+                        vendasPorProduto[prodId] += v.quantidade
+                    })
+                    
+                    // Converte para array e ordena
+                    const topProdutos = Object.entries(vendasPorProduto)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                    
+                    let html = '<div style="width: 100%;">'
+                    topProdutos.forEach(([prodId, qtd], index) => {
+                        const produto = produtos.find(p => p.id == prodId)
+                        const nome = produto ? produto.nome : `Produto ${prodId}`
+                        const width = Math.min(100, (qtd / (topProdutos[0][1] || 1)) * 100)
+                        
                         html += `
-                            <div class="produto">
-                                <strong>${p.nome}</strong><br>
-                                R$ ${p.preco} | Estoque: ${p.estoque}
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>${index + 1}. ${nome}</span>
+                                    <strong>${qtd} un.</strong>
+                                </div>
+                                <div style="height: 10px; background: #e9ecef; border-radius: 5px; overflow: hidden;">
+                                    <div style="height: 100%; width: ${width}%; background: linear-gradient(90deg, #3498db, #2980b9); border-radius: 5px;"></div>
+                                </div>
                             </div>
                         `
                     })
-                    document.getElementById('produtos').innerHTML = html
+                    html += '</div>'
+                    maisVendidosDiv.innerHTML = html
                 }
                 
-                document.getElementById('status').innerHTML = `✅ ${dados.length} produtos carregados`
+                status.className = 'status status-success'
+                status.innerHTML = '✅ Dashboard atualizado com sucesso!'
                 
-            } catch (erro) {
-                document.getElementById('status').innerHTML = `❌ Erro: ${erro.message}`
-                console.error('Erro detalhado:', erro)
+            } catch (error) {
+                status.className = 'status status-error'
+                status.innerHTML = `❌ Erro ao carregar dashboard: ${error.message}`
             }
         }
         
-        // FUNÇÃO PARA CADASTRAR
-        async function cadastrar() {
-            const nome = document.getElementById('nome').value
-            const preco = document.getElementById('preco').value
+        // ========== PRODUTOS ==========
+        async function carregarProdutos() {
+            const status = document.getElementById('statusProdutos')
+            status.className = 'status status-loading'
+            status.innerHTML = '🔄 Carregando produtos...'
             
-            if (!nome || !preco) {
-                alert('Preencha nome e preço!')
+            try {
+                produtos = await supabaseFetch('produtos?select=*&order=id.desc')
+                
+                // Atualiza tabela
+                const tbody = document.getElementById('tabelaProdutosBody')
+                tbody.innerHTML = ''
+                
+                produtos.forEach(p => {
+                    const margem = p.preco_venda && p.custo ? 
+                        (((p.preco_venda - p.custo) / p.custo) * 100).toFixed(1) + '%' : 
+                        'N/A'
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${p.id}</td>
+                            <td><strong>${p.nome}</strong><br><small style="color: #7f8c8d;">${p.descricao || 'Sem descrição'}</small></td>
+                            <td>
+                                <span style="font-weight: 700; color: ${p.estoque < 5 ? '#e74c3c' : p.estoque < 10 ? '#e67e22' : '#27ae60'}">
+                                    ${p.estoque}
+                                </span>
+                            </td>
+                            <td>R$ ${parseFloat(p.custo || 0).toFixed(2)}</td>
+                            <td>R$ ${parseFloat(p.preco_venda || 0).toFixed(2)}</td>
+                            <td style="color: ${margem.includes('-') ? '#e74c3c' : '#27ae60'}; font-weight: 700;">
+                                ${margem}
+                            </td>
+                            <td>
+                                <button class="btn" onclick="editarProduto(${p.id})" style="padding: 8px 12px; font-size: 12px; background: #3498db; color: white; margin-right: 5px;">
+                                    ✏️
+                                </button>
+                                <button class="btn" onclick="excluirProduto(${p.id})" style="padding: 8px 12px; font-size: 12px; background: #e74c3c; color: white;">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    `
+                })
+                
+                // Atualiza select de vendas
+                const select = document.getElementById('vendaProduto')
+                select.innerHTML = '<option value="">Selecione um produto...</option>'
+                produtos.forEach(p => {
+                    const option = document.createElement('option')
+                    option.value = p.id
+                    option.textContent = `${p.nome} (Estoque: ${p.estoque}) - R$ ${parseFloat(p.preco_venda || 0).toFixed(2)}`
+                    select.appendChild(option)
+                })
+                
+                status.className = 'status status-success'
+                status.innerHTML = `✅ ${produtos.length} produtos carregados`
+                
+            } catch (error) {
+                status.className = 'status status-error'
+                status.innerHTML = `❌ Erro ao carregar produtos: ${error.message}`
+            }
+        }
+        
+        async function cadastrarProduto() {
+            const produto = {
+                nome: document.getElementById('produtoNome').value,
+                estoque: parseInt(document.getElementById('produtoEstoque').value) || 0,
+                custo: parseFloat(document.getElementById('produtoCusto').value) || 0,
+                preco_venda: parseFloat(document.getElementById('produtoPreco').value) || 0,
+                descricao: document.getElementById('produtoDescricao').value
+            }
+            
+            if (!produto.nome || !produto.custo || !produto.preco_venda) {
+                alert('Preencha os campos obrigatórios: Produto, Custo e Preço de Venda!')
                 return
             }
             
+            const status = document.getElementById('statusProdutos')
+            status.className = 'status status-loading'
+            status.innerHTML = '🔄 Cadastrando produto...'
+            
             try {
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/produtos?apikey=${SUPABASE_KEY}`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'apikey': SUPABASE_KEY,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=representation'
-                        },
-                        body: JSON.stringify([{
-                            nome: nome,
-                            preco: parseFloat(preco),
-                            estoque: 0
-                        }])
-                    }
-                )
+                await supabaseFetch('produtos', {
+                    method: 'POST',
+                    body: JSON.stringify([produto])
+                })
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+                // Limpa formulário
+                document.getElementById('produtoNome').value = ''
+                document.getElementById('produtoEstoque').value = '10'
+                document.getElementById('produtoCusto').value = ''
+                document.getElementById('produtoPreco').value = ''
+                document.getElementById('produtoDescricao').value = ''
+                
+                // Recarrega lista
+                await carregarProdutos()
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    carregarDashboard()
                 }
                 
-                // Limpa e recarrega
-                document.getElementById('nome').value = ''
-                document.getElementById('preco').value = ''
-                
-                carregarProdutos()
-                
-            } catch (erro) {
-                document.getElementById('status').innerHTML = `❌ Erro ao cadastrar: ${erro.message}`
+            } catch (error) {
+                status.className = 'status status-error'
+                status.innerHTML = `❌ Erro ao cadastrar: ${error.message}`
             }
         }
         
-        // INICIA
-        carregarProdutos()
+        // ========== VENDAS ==========
+        async function carregarVendas() {
+            const status = document.getElementById('statusVendas')
+            status.className = 'status status-loading'
+            status.innerHTML = '🔄 Carregando vendas...'
+            
+            try {
+                vendas = await supabaseFetch('vendas?select=*,produtos(nome)&order=id.desc&limit=50')
+                
+                // Atualiza tabela
+                const tbody = document.getElementById('tabelaVendasBody')
+                tbody.innerHTML = ''
+                
+                vendas.forEach(v => {
+                    const data = new Date(v.data).toLocaleString('pt-BR')
+                    const total = v.quantidade * v.valor_unitario
+                    const produtoNome = v.produtos ? v.produtos.nome : `Produto ${v.produto_id}`
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${data}</td>
+                            <td>${produtoNome}</td>
+                            <td>${v.quantidade}</td>
+                            <td>R$ ${parseFloat(v.valor_unitario).toFixed(2)}</td>
+                            <td style="font-weight: 700; color: #27ae60;">R$ ${total.toFixed(2)}</td>
+                        </tr>
+                    `
+                })
+                
+                status.className = 'status status-success'
+                status.innerHTML = `✅ ${vendas.length} vendas carregadas`
+                
+            } catch (error) {
+                status.className = 'status status-error'
+                status.innerHTML = `❌ Erro ao carregar vendas: ${error.message}`
+            }
+        }
+        
+        async function registrarVenda() {
+            const produtoId = document.getElementById('vendaProduto').value
+            const quantidade = parseInt(document.getElementById('vendaQuantidade').value) || 1
+            const valorUnitario = parseFloat(document.getElementById('vendaPreco').value) || 0
+            
+            if (!produtoId || !valorUnitario) {
+                alert('Selecione um produto e informe o preço!')
+                return
+            }
+            
+            // Verifica estoque
+            const produto = produtos.find(p => p.id == produtoId)
+            if (!produto) {
+                alert('Produto não encontrado!')
+                return
+            }
+            
+            if (produto.estoque < quantidade) {
+                alert(`Estoque insuficiente! Disponível: ${produto.estoque}`)
+                return
+            }
+            
+            const status = document.getElementById('statusVendas')
+            status.className = 'status status-loading'
+            status.innerHTML = '🔄 Registrando venda...'
+            
+            try {
+                const venda = {
+                    produto_id: parseInt(produtoId),
+                    quantidade: quantidade,
+                    valor_unitario: valorUnitario,
+                    data: new Date().toISOString()
+                }
+                
+                // 1. Registra a venda
+                await supabaseFetch('vendas', {
+                    method: 'POST',
+                    body: JSON.stringify([venda])
+                })
+                
+                // 2. Atualiza estoque do produto
+                const novoEstoque = produto.estoque - quantidade
+                await supabaseFetch(`produtos?id=eq.${produtoId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ estoque: novoEstoque })
+                })
+                
+                // Limpa formulário
+                document.getElementById('vendaQuantidade').value = '1'
+                document.getElementById('vendaPreco').value = ''
+                
+                // Recarrega dados
+                await Promise.all([carregarProdutos(), carregarVendas()])
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    carregarDashboard()
+                }
+                
+                status.className = 'status status-success'
+                status.innerHTML = '✅ Venda registrada com sucesso!'
+                
+            } catch (error) {
+                status.className = 'status status-error'
+                status.innerHTML = `❌ Erro ao registrar venda: ${error.message}`
+            }
+        }
+        
+        // ========== RELATÓRIOS ==========
+        async function carregarRelatorios() {
+            try {
+                // Calcula valores
+                const hoje = new Date().toISOString().split('T')[0]
+                const vendasHoje = vendas.filter(v => v.data.split('T')[0] === hoje)
+                    .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
+                
+                // Últimos 7 dias
+                const umaSemanaAtras = new Date()
+                umaSemanaAtras.setDate(umaSemanaAtras.getDate() - 7)
+                const vendasSemana = vendas.filter(v => new Date(v.data) >= umaSemanaAtras)
+                    .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
+                
+                // Mês atual
+                const mesAtual = new Date().getMonth() + 1
+                const vendasMes = vendas.filter(v => new Date(v.data).getMonth() + 1 === mesAtual)
+                    .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
+                
+                // Atualiza cards
+                document.getElementById('relDiario').textContent = `R$ ${vendasHoje.toFixed(2)}`
+                document.getElementById('relSemanal').textContent = `R$ ${vendasSemana.toFixed(2)}`
+                document.getElementById('relMensal').textContent = `R$ ${vendasMes.toFixed(2)}`
+                
+                // Top produtos
+                if (vendas.length > 0) {
+                    // Agrupa vendas por produto
+                    const vendasPorProduto = {}
+                    vendas.forEach(v => {
+                        const prodId = v.produto_id
+                        if (!vendasPorProduto[prodId]) {
+                            vendasPorProduto[prodId] = {
+                                quantidade: 0,
+                                total: 0
+                            }
+                        }
+                        vendasPorProduto[prodId].quantidade += v.quantidade
+                        vendasPorProduto[prodId].total += v.quantidade * v.valor_unitario
+                    })
+                    
+                    // Converte para array
+                    const produtosArray = Object.entries(vendasPorProduto).map(([id, dados]) => ({
+                        id: parseInt(id),
+                        ...dados
+                    }))
+                    
+                    // Ordena por quantidade
+                    const maisVendidos = [...produtosArray].sort((a, b) => b.quantidade - a.quantidade).slice(0, 5)
+                    const menosVendidos = [...produtosArray].sort((a, b) => a.quantidade - b.quantidade).slice(0, 5)
+                    
+                    // Exibe mais vendidos
+                    const topMaisDiv = document.getElementById('topMaisVendidos')
+                    topMaisDiv.innerHTML = maisVendidos.map(p => {
+                        const produto = produtos.find(prod => prod.id === p.id)
+                        return `
+                            <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #27ae60;">
+                                <div style="font-weight: 700;">${produto ? produto.nome : `Produto ${p.id}`}</div>
+                                <div style="color: #7f8c8d; font-size: 14px;">${p.quantidade} unidades</div>
+                                <div style="color: #2c3e50; font-weight: 600;">R$ ${p.total.toFixed(2)}</div>
+                            </div>
+                        `
+                    }).join('') || '<div style="text-align: center; color: #7f8c8d;">Nenhuma venda registrada</div>'
+                    
+                    // Exibe menos vendidos
+                    const topMenosDiv = document.getElementById('topMenosVendidos')
+                    topMenosDiv.innerHTML = menosVendidos.map(p => {
+                        const produto = produtos.find(prod => prod.id === p.id)
+                        return `
+                            <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                                <div style="font-weight: 700;">${produto ? produto.nome : `Produto ${p.id}`}</div>
+                                <div style="color: #7f8c8d; font-size: 14px;">${p.quantidade} unidades</div>
+                                <div style="color: #2c3e50; font-weight: 600;">R$ ${p.total.toFixed(2)}</div>
+                            </div>
+                        `
+                    }).join('') || '<div style="text-align: center; color: #7f8c8d;">Nenhuma venda registrada</div>'
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar relatórios:', error)
+            }
+        }
+        
+        function gerarRelatorio(tipo) {
+            alert(`Relatório ${tipo} gerado! Em produção, aqui seria um PDF/Excel.`)
+            // Implementar geração de relatório em PDF/Excel
+        }
+        
+        // ========== INICIALIZAÇÃO ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Carrega dados iniciais
+            await carregarProdutos()
+            await carregarVendas()
+            carregarDashboard()
+            
+            // Configura eventos
+            document.getElementById('vendaProduto').addEventListener('change', function() {
+                const produtoId = this.value
+                if (produtoId) {
+                    const produto = produtos.find(p => p.id == produtoId)
+                    if (produto && produto.preco_venda) {
+                        document.getElementById('vendaPreco').value = produto.preco_venda
+                    }
+                }
+            })
+        })
     </script>
 </body>
 </html>
