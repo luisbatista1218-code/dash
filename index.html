@@ -1,192 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Sistema Produtos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .status {
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .loading {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        .data {
-            background: #e8f4fd;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 14px;
-            overflow-x: auto;
-        }
-        .sql-code {
-            background: #2d2d2d;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            overflow-x: auto;
-        }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            margin: 5px;
-        }
-        button:hover {
-            background: #45a049;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
+        body { font-family: Arial; padding: 20px; }
+        input, button { padding: 10px; margin: 5px; }
+        .produto { border: 1px solid #ccc; padding: 10px; margin: 5px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔧 Sistema Completo - Produtos</h1>
-        
-        <div id="status" class="status loading">
-            🔄 Conectando ao banco de dados...
-        </div>
-        
-        <!-- FORMULÁRIO PARA CADASTRAR -->
-        <div style="margin: 20px 0; padding: 20px; border: 2px dashed #ddd; border-radius: 10px;">
-            <h3>➕ Cadastrar Novo Produto</h3>
-            <input type="text" id="nomeProduto" placeholder="Nome do produto" style="width: 100%; padding: 10px; margin: 5px 0;">
-            <input type="number" id="precoProduto" placeholder="Preço" step="0.01" style="width: 100%; padding: 10px; margin: 5px 0;">
-            <input type="number" id="estoqueProduto" placeholder="Estoque" style="width: 100%; padding: 10px; margin: 5px 0;">
-            <button onclick="cadastrarProduto()">Cadastrar Produto</button>
-            <button onclick="criarTabela()" style="background: #2196F3;">Criar Tabela Automaticamente</button>
-        </div>
-        
-        <!-- SQL PARA CRIAR TABELA -->
-        <div class="sql-code">
-            <strong>SQL para criar tabela (copiar e colar no Supabase → SQL Editor):</strong><br><br>
-            CREATE TABLE produtos (<br>
-            &nbsp;&nbsp;id BIGSERIAL PRIMARY KEY,<br>
-            &nbsp;&nbsp;created_at TIMESTAMP DEFAULT NOW(),<br>
-            &nbsp;&nbsp;nome TEXT NOT NULL,<br>
-            &nbsp;&nbsp;preco DECIMAL(10,2) NOT NULL,<br>
-            &nbsp;&nbsp;estoque INTEGER DEFAULT 0<br>
-            );<br><br>
-            INSERT INTO produtos (nome, preco, estoque) VALUES<br>
-            &nbsp;&nbsp;('Notebook', 3500.00, 10),<br>
-            &nbsp;&nbsp;('Mouse', 89.90, 50),<br>
-            &nbsp;&nbsp;('Teclado', 199.90, 30);
-        </div>
-        
-        <div id="data" class="data" style="display: none;">
-            <!-- Dados aparecerão aqui -->
-        </div>
-        
-        <div style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
-            URL: epcbuzoyhoksyqgtruyr.supabase.co
-        </div>
+    <h1>🛒 Sistema de Produtos</h1>
+    
+    <div id="status">Carregando...</div>
+    
+    <div>
+        <h3>➕ Novo Produto</h3>
+        <input type="text" id="nome" placeholder="Nome">
+        <input type="number" id="preco" placeholder="Preço" step="0.01">
+        <button onclick="cadastrar()">Cadastrar</button>
     </div>
+    
+    <div id="produtos" style="margin-top: 20px;"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // SUAS CREDENCIAIS
-        const supabaseUrl = 'https://epcbuzoyhoksyqgtruyr.supabase.co'
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwY2J1em95aG9rc3lxZ3RydXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDM2MjgsImV4cCI6MjA4NTg3OTYyOH0.0EJEG5n06RJSrXfNzbkR7LVgtUSppScogSLmGYRclD0'
+        const SUPABASE_URL = 'https://epcbuzoyhoksyqgtruyr.supabase.co'
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwY2J1em95aG9rc3lxZ3RydXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDM2MjgsImV4cCI6MjA4NTg3OTYyOH0.0EJEG5n06RJSrXfNzbkR7LVgtUSppScogSLmGYRclD0'
         
-        let supabase
-        
-        // Atualiza status
-        function updateStatus(message, type = 'loading') {
-            const statusEl = document.getElementById('status')
-            statusEl.innerHTML = message
-            statusEl.className = `status ${type}`
-        }
-        
-        // Mostra dados
-        function showData(data) {
-            const dataEl = document.getElementById('data')
-            dataEl.style.display = 'block'
-            
-            if (data.length === 0) {
-                dataEl.innerHTML = '<strong>📦 Nenhum produto cadastrado ainda.</strong>'
-                return
-            }
-            
-            let html = '<strong>📦 Produtos Cadastrados:</strong><br><br>'
-            html += '<table style="width: 100%; border-collapse: collapse;">'
-            html += '<tr style="background: #4CAF50; color: white;">'
-            html += '<th style="padding: 10px; text-align: left;">ID</th>'
-            html += '<th style="padding: 10px; text-align: left;">Nome</th>'
-            html += '<th style="padding: 10px; text-align: left;">Preço</th>'
-            html += '<th style="padding: 10px; text-align: left;">Estoque</th>'
-            html += '</tr>'
-            
-            data.forEach(produto => {
-                html += '<tr style="border-bottom: 1px solid #ddd;">'
-                html += `<td style="padding: 10px;">${produto.id}</td>`
-                html += `<td style="padding: 10px;">${produto.nome}</td>`
-                html += `<td style="padding: 10px;">R$ ${parseFloat(produto.preco).toFixed(2)}</td>`
-                html += `<td style="padding: 10px;">${produto.estoque}</td>`
-                html += '</tr>'
-            })
-            
-            html += '</table>'
-            dataEl.innerHTML = html
-        }
-        
-        // Carrega produtos
+        // FUNÇÃO PARA BUSCAR DADOS
         async function carregarProdutos() {
+            document.getElementById('status').innerHTML = 'Carregando...'
+            
             try {
-                const { data, error } = await supabase
-                    .from('produtos')
-                    .select('*')
-                    .order('id', { ascending: false })
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/produtos?apikey=${SUPABASE_KEY}&select=*&order=id.desc`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY
+                        }
+                    }
+                )
                 
-                if (error) throw error
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+                }
                 
-                showData(data)
+                const dados = await response.json()
                 
-            } catch (err) {
-                console.error('Erro ao carregar:', err)
+                if (dados.length === 0) {
+                    document.getElementById('produtos').innerHTML = '<p>Nenhum produto cadastrado.</p>'
+                } else {
+                    let html = '<h3>📦 Produtos:</h3>'
+                    dados.forEach(p => {
+                        html += `
+                            <div class="produto">
+                                <strong>${p.nome}</strong><br>
+                                R$ ${p.preco} | Estoque: ${p.estoque}
+                            </div>
+                        `
+                    })
+                    document.getElementById('produtos').innerHTML = html
+                }
+                
+                document.getElementById('status').innerHTML = `✅ ${dados.length} produtos carregados`
+                
+            } catch (erro) {
+                document.getElementById('status').innerHTML = `❌ Erro: ${erro.message}`
+                console.error('Erro detalhado:', erro)
             }
         }
         
-        // Cadastra novo produto
-        async function cadastrarProduto() {
-            const nome = document.getElementById('nomeProduto').value
-            const preco = document.getElementById('precoProduto').value
-            const estoque = document.getElementById('estoqueProduto').value
+        // FUNÇÃO PARA CADASTRAR
+        async function cadastrar() {
+            const nome = document.getElementById('nome').value
+            const preco = document.getElementById('preco').value
             
             if (!nome || !preco) {
                 alert('Preencha nome e preço!')
@@ -194,96 +82,41 @@
             }
             
             try {
-                const { data, error } = await supabase
-                    .from('produtos')
-                    .insert([
-                        {
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/produtos?apikey=${SUPABASE_KEY}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify([{
                             nome: nome,
                             preco: parseFloat(preco),
-                            estoque: estoque ? parseInt(estoque) : 0
-                        }
-                    ])
-                    .select()
-                
-                if (error) throw error
-                
-                // Limpa formulário
-                document.getElementById('nomeProduto').value = ''
-                document.getElementById('precoProduto').value = ''
-                document.getElementById('estoqueProduto').value = ''
-                
-                updateStatus(`✅ Produto "${data[0].nome}" cadastrado com sucesso!`, 'success')
-                
-                // Recarrega lista
-                setTimeout(carregarProdutos, 500)
-                
-            } catch (err) {
-                updateStatus(`❌ Erro ao cadastrar: ${err.message}`, 'error')
-            }
-        }
-        
-        // Tenta criar tabela via API (funciona se RLS desabilitado)
-        async function criarTabela() {
-            updateStatus('🛠️ Tentando criar tabela automaticamente...', 'loading')
-            
-            try {
-                // Primeiro tenta ver se tabela existe
-                const { error: selectError } = await supabase
-                    .from('produtos')
-                    .select('id')
-                    .limit(1)
-                
-                if (!selectError) {
-                    updateStatus('✅ Tabela já existe!', 'success')
-                    carregarProdutos()
-                    return
-                }
-                
-                // Se erro for "tabela não existe", mostra SQL manual
-                if (selectError.message.includes('does not exist')) {
-                    updateStatus('❌ Tabela não existe. Use o SQL acima no Supabase → SQL Editor', 'error')
-                    document.querySelector('.sql-code').scrollIntoView({ behavior: 'smooth' })
-                }
-                
-            } catch (err) {
-                updateStatus(`❌ Erro: ${err.message}`, 'error')
-            }
-        }
-        
-        // Testa conexão inicial
-        async function testConnection() {
-            try {
-                updateStatus('🔄 Criando conexão...', 'loading')
-                
-                supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
-                
-                updateStatus('📡 Buscando dados da tabela "produtos"...', 'loading')
-                
-                const { data, error } = await supabase
-                    .from('produtos')
-                    .select('*')
-                    .limit(1)
-                
-                if (error) {
-                    if (error.message.includes('does not exist')) {
-                        updateStatus(`❌ Tabela "produtos" não existe. Use o SQL acima ou clique "Criar Tabela".`, 'error')
-                    } else if (error.message.includes('row level security')) {
-                        updateStatus(`❌ RLS bloqueando. Vá no Supabase → Authentication → Policies → Desabilite RLS.`, 'error')
-                    } else {
-                        updateStatus(`❌ ERRO: ${error.message}`, 'error')
+                            estoque: 0
+                        }])
                     }
-                } else {
-                    updateStatus(`✅ CONEXÃO BEM-SUCEDIDA! Sistema pronto.`, 'success')
-                    carregarProdutos()
+                )
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`)
                 }
                 
-            } catch (err) {
-                updateStatus(`💥 ERRO CRÍTICO: ${err.message}`, 'error')
+                // Limpa e recarrega
+                document.getElementById('nome').value = ''
+                document.getElementById('preco').value = ''
+                
+                carregarProdutos()
+                
+            } catch (erro) {
+                document.getElementById('status').innerHTML = `❌ Erro ao cadastrar: ${erro.message}`
             }
         }
         
-        // Inicia teste quando página carrega
-        document.addEventListener('DOMContentLoaded', testConnection)
+        // INICIA
+        carregarProdutos()
     </script>
 </body>
 </html>
