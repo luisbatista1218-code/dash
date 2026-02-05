@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ✅ CORRETO para HTML puro:
+    const supabaseUrl = 'https://epcbuzoyhoksyqgtruyr.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwY2J1em95aG9rc3lxZ3RydXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDM2MjgsImV4cCI6MjA4NTg3OTYyOH0.0EJEG5n06RJSrXfNzbkR7LVgtUSppScogSLmGYRclD0'
+    
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+    
+    // Teste rápido:
+    supabase.from('produtos').select('*').then(({ data }) => {
+      console.log('✅ Funcionou!', data)
+    })
+  </script>
+</body>
+</html>
