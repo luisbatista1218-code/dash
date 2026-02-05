@@ -593,9 +593,15 @@
             if (tabName === 'relatorios') carregarRelatorios()
         }
         
-        // ========== FUNÇÕES SUPABASE ==========
+        // ========== FUNÇÕES SUPABASE CORRIGIDAS ==========
         async function supabaseFetch(endpoint, options = {}) {
-            const url = `${SUPABASE_URL}/rest/v1/${endpoint}?apikey=${SUPABASE_KEY}`
+            // CORREÇÃO: Remover parâmetros extras da URL e usar query separada
+            let url = `${SUPABASE_URL}/rest/v1/${endpoint}`
+            
+            // Se for GET e tiver parâmetros, adiciona na URL
+            if (!options.method || options.method === 'GET') {
+                url += `?apikey=${SUPABASE_KEY}`
+            }
             
             const defaultHeaders = {
                 'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -614,6 +620,9 @@
                     const errorText = await response.text()
                     throw new Error(`HTTP ${response.status}: ${errorText}`)
                 }
+                
+                // Se a resposta for vazia (para DELETE, etc)
+                if (response.status === 204) return null
                 
                 return await response.json()
             } catch (error) {
@@ -634,11 +643,11 @@
                 
                 // Calcula métricas
                 const hoje = new Date().toISOString().split('T')[0]
-                const vendasHoje = vendas.filter(v => v.data.split('T')[0] === hoje)
+                const vendasHoje = vendas.filter(v => v.data && v.data.split('T')[0] === hoje)
                     .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
                 
                 const mesAtual = new Date().getMonth() + 1
-                const vendasMes = vendas.filter(v => new Date(v.data).getMonth() + 1 === mesAtual)
+                const vendasMes = vendas.filter(v => v.data && new Date(v.data).getMonth() + 1 === mesAtual)
                     .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
                 
                 const baixoEstoque = produtos.filter(p => p.estoque < 10).length
@@ -669,12 +678,13 @@
                     `
                 }
                 
-                // Produtos mais vendidos (simulado)
+                // Produtos mais vendidos
                 const maisVendidosDiv = document.getElementById('maisVendidos')
                 if (vendas.length > 0) {
                     // Agrupa vendas por produto
                     const vendasPorProduto = {}
                     vendas.forEach(v => {
+                        if (!v.produto_id) return
                         const prodId = v.produto_id
                         if (!vendasPorProduto[prodId]) vendasPorProduto[prodId] = 0
                         vendasPorProduto[prodId] += v.quantidade
@@ -686,25 +696,31 @@
                         .slice(0, 5)
                     
                     let html = '<div style="width: 100%;">'
-                    topProdutos.forEach(([prodId, qtd], index) => {
-                        const produto = produtos.find(p => p.id == prodId)
-                        const nome = produto ? produto.nome : `Produto ${prodId}`
-                        const width = Math.min(100, (qtd / (topProdutos[0][1] || 1)) * 100)
-                        
-                        html += `
-                            <div style="margin-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <span>${index + 1}. ${nome}</span>
-                                    <strong>${qtd} un.</strong>
+                    if (topProdutos.length > 0) {
+                        topProdutos.forEach(([prodId, qtd], index) => {
+                            const produto = produtos.find(p => p.id == prodId)
+                            const nome = produto ? produto.nome : `Produto ${prodId}`
+                            const width = Math.min(100, (qtd / (topProdutos[0][1] || 1)) * 100)
+                            
+                            html += `
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span>${index + 1}. ${nome}</span>
+                                        <strong>${qtd} un.</strong>
+                                    </div>
+                                    <div style="height: 10px; background: #e9ecef; border-radius: 5px; overflow: hidden;">
+                                        <div style="height: 100%; width: ${width}%; background: linear-gradient(90deg, #3498db, #2980b9); border-radius: 5px;"></div>
+                                    </div>
                                 </div>
-                                <div style="height: 10px; background: #e9ecef; border-radius: 5px; overflow: hidden;">
-                                    <div style="height: 100%; width: ${width}%; background: linear-gradient(90deg, #3498db, #2980b9); border-radius: 5px;"></div>
-                                </div>
-                            </div>
-                        `
-                    })
+                            `
+                        })
+                    } else {
+                        html = '<div style="text-align: center; color: #7f8c8d;">Nenhuma venda registrada ainda</div>'
+                    }
                     html += '</div>'
                     maisVendidosDiv.innerHTML = html
+                } else {
+                    maisVendidosDiv.innerHTML = '<div style="text-align: center; color: #7f8c8d;">Nenhuma venda registrada ainda</div>'
                 }
                 
                 status.className = 'status status-success'
@@ -723,14 +739,18 @@
             status.innerHTML = '🔄 Carregando produtos...'
             
             try {
-                produtos = await supabaseFetch('produtos?select=*&order=id.desc')
+                // CORREÇÃO: Query simples sem parâmetros extras
+                produtos = await supabaseFetch('produtos?select=*')
+                
+                // Ordena localmente por ID desc
+                produtos.sort((a, b) => b.id - a.id)
                 
                 // Atualiza tabela
                 const tbody = document.getElementById('tabelaProdutosBody')
                 tbody.innerHTML = ''
                 
                 produtos.forEach(p => {
-                    const margem = p.preco_venda && p.custo ? 
+                    const margem = p.preco_venda && p.custo && p.custo > 0 ? 
                         (((p.preco_venda - p.custo) / p.custo) * 100).toFixed(1) + '%' : 
                         'N/A'
                     
@@ -816,9 +836,35 @@
                     carregarDashboard()
                 }
                 
+                status.className = 'status status-success'
+                status.innerHTML = '✅ Produto cadastrado com sucesso!'
+                
             } catch (error) {
                 status.className = 'status status-error'
                 status.innerHTML = `❌ Erro ao cadastrar: ${error.message}`
+            }
+        }
+        
+        // Funções auxiliares (simplificadas)
+        function editarProduto(id) {
+            alert(`Editar produto ${id} - Funcionalidade em desenvolvimento`)
+        }
+        
+        async function excluirProduto(id) {
+            if (!confirm('Tem certeza que deseja excluir este produto?')) return
+            
+            try {
+                await supabaseFetch(`produtos?id=eq.${id}`, {
+                    method: 'DELETE'
+                })
+                
+                await carregarProdutos()
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    carregarDashboard()
+                }
+                
+            } catch (error) {
+                alert(`Erro ao excluir: ${error.message}`)
             }
         }
         
@@ -829,16 +875,22 @@
             status.innerHTML = '🔄 Carregando vendas...'
             
             try {
-                vendas = await supabaseFetch('vendas?select=*,produtos(nome)&order=id.desc&limit=50')
+                // CORREÇÃO: Query simples
+                vendas = await supabaseFetch('vendas?select=*')
+                
+                // Ordena localmente por data desc
+                vendas.sort((a, b) => new Date(b.data || b.created_at) - new Date(a.data || a.created_at))
                 
                 // Atualiza tabela
                 const tbody = document.getElementById('tabelaVendasBody')
                 tbody.innerHTML = ''
                 
                 vendas.forEach(v => {
-                    const data = new Date(v.data).toLocaleString('pt-BR')
+                    const data = v.data ? new Date(v.data).toLocaleString('pt-BR') : 
+                              v.created_at ? new Date(v.created_at).toLocaleString('pt-BR') : 'N/A'
                     const total = v.quantidade * v.valor_unitario
-                    const produtoNome = v.produtos ? v.produtos.nome : `Produto ${v.produto_id}`
+                    const produto = produtos.find(p => p.id === v.produto_id)
+                    const produtoNome = produto ? produto.nome : `Produto ${v.produto_id}`
                     
                     tbody.innerHTML += `
                         <tr>
@@ -908,6 +960,7 @@
                 })
                 
                 // Limpa formulário
+                document.getElementById('vendaProduto').value = ''
                 document.getElementById('vendaQuantidade').value = '1'
                 document.getElementById('vendaPreco').value = ''
                 
@@ -931,18 +984,18 @@
             try {
                 // Calcula valores
                 const hoje = new Date().toISOString().split('T')[0]
-                const vendasHoje = vendas.filter(v => v.data.split('T')[0] === hoje)
+                const vendasHoje = vendas.filter(v => v.data && v.data.split('T')[0] === hoje)
                     .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
                 
                 // Últimos 7 dias
                 const umaSemanaAtras = new Date()
                 umaSemanaAtras.setDate(umaSemanaAtras.getDate() - 7)
-                const vendasSemana = vendas.filter(v => new Date(v.data) >= umaSemanaAtras)
+                const vendasSemana = vendas.filter(v => v.data && new Date(v.data) >= umaSemanaAtras)
                     .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
                 
                 // Mês atual
                 const mesAtual = new Date().getMonth() + 1
-                const vendasMes = vendas.filter(v => new Date(v.data).getMonth() + 1 === mesAtual)
+                const vendasMes = vendas.filter(v => v.data && new Date(v.data).getMonth() + 1 === mesAtual)
                     .reduce((total, v) => total + (v.quantidade * v.valor_unitario), 0)
                 
                 // Atualiza cards
@@ -955,6 +1008,7 @@
                     // Agrupa vendas por produto
                     const vendasPorProduto = {}
                     vendas.forEach(v => {
+                        if (!v.produto_id) return
                         const prodId = v.produto_id
                         if (!vendasPorProduto[prodId]) {
                             vendasPorProduto[prodId] = {
@@ -1010,16 +1064,10 @@
         
         function gerarRelatorio(tipo) {
             alert(`Relatório ${tipo} gerado! Em produção, aqui seria um PDF/Excel.`)
-            // Implementar geração de relatório em PDF/Excel
         }
         
         // ========== INICIALIZAÇÃO ==========
         document.addEventListener('DOMContentLoaded', async () => {
-            // Carrega dados iniciais
-            await carregarProdutos()
-            await carregarVendas()
-            carregarDashboard()
-            
             // Configura eventos
             document.getElementById('vendaProduto').addEventListener('change', function() {
                 const produtoId = this.value
@@ -1030,6 +1078,15 @@
                     }
                 }
             })
+            
+            // Carrega dados iniciais
+            try {
+                await carregarProdutos()
+                await carregarVendas()
+                carregarDashboard()
+            } catch (error) {
+                console.error('Erro na inicialização:', error)
+            }
         })
     </script>
 </body>
